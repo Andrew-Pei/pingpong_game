@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -474,8 +474,14 @@
             }
         }
         
-        function showOutMsg() {
-            statusMsg.textContent = "出界";
+        function showOutMsg(winner) {
+            let msg = "";
+            if (winner === 1) {
+                msg = "Player1+1分";
+            } else {
+                msg = isVsComputer ? "AI+1分" : "Player2+1分";
+            }
+            statusMsg.textContent = msg;
             statusMsg.classList.add('show');
         }
 
@@ -516,25 +522,22 @@
                 // A. 上下出界
                 const ballCenterY = ballY + 10;
                 if (ballCenterY < tableBounds.top || ballCenterY > tableBounds.bottom) {
-                    showOutMsg(); 
                     isRoundOver = true; 
                     
                     const centerX = window.innerWidth / 2;
-                    if (ballX < centerX) {
-                        handleScore(2); // P2 得分
-                    } else {
-                        handleScore(1); // P1 得分
-                    }
+                    let winner = (ballX < centerX) ? 2 : 1;
+                    showOutMsg(winner);
+                    handleScore(winner);
                 }
                 
                 // B. 左右得分
                 if (!isRoundOver) {
                     if (ballX < -20) {
-                        showOutMsg(); 
+                        showOutMsg(2); 
                         isRoundOver = true;
                         handleScore(2);
                     } else if (ballX > window.innerWidth) {
-                        showOutMsg(); 
+                        showOutMsg(1); 
                         isRoundOver = true;
                         handleScore(1);
                     }
@@ -751,3 +754,4 @@
     </script>
 </body>
 </html>
+
