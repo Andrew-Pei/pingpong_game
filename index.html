@@ -246,22 +246,24 @@
             background-color: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             z-index: 20;
+            overflow-y: auto;
+            padding: 20px 10px;
         }
 
         #game-over { display: none; }
         
         .btn-group {
             display: flex;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 10px;
         }
 
         button {
-            padding: 15px 40px;
-            font-size: 24px;
+            padding: 12px 30px;
+            font-size: 20px;
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
             border: none;
@@ -327,15 +329,16 @@
         /* 触控控制样式 */
         #touch-controls {
             position: absolute;
-            bottom: 30px;
+            bottom: 0;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 10px 20px;
             box-sizing: border-box;
             z-index: 15;
             pointer-events: none;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
         }
         
         .touch-control-group {
@@ -357,9 +360,9 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 8px;
-            width: 150px;
-            height: 150px;
+            gap: 6px;
+            width: 120px;
+            height: 120px;
         }
         
         .touch-button {
@@ -419,15 +422,15 @@
         }
         
         #serve-touch-button {
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 50px;
             background-color: rgba(255, 193, 7, 0.3);
             border-color: rgba(255, 193, 7, 0.6);
-            border-radius: 60px;
-            font-size: 18px;
+            border-radius: 25px;
+            font-size: 16px;
             text-align: center;
-            padding: 10px;
-            line-height: 1.3;
+            padding: 8px;
+            line-height: 1.2;
         }
         
         #serve-touch-button:active {
@@ -536,37 +539,33 @@
         </div>
         
         <div id="start-screen">
-            <h1 style="color:white; font-size: 48px; margin-bottom:10px;">乒乓球对战</h1>
-            <p style="color: #bbb; margin-bottom: 5px;">⚠️ 注意：当心乒乓球飞出球桌边缘！！！</p>
-            <p style="color: #bbb; margin-bottom: 5px;">⚠️ 规则：双方不能越过中线网。</p>
-            <p style="color: #bbb; margin-bottom: 40px;">如果不小心在己方区域把球打出上下边界，对方得分。</p>
+            <h1 style="color:white; font-size: 30px; margin-bottom:6px;">乒乓球对战</h1>
+            <p style="color: #bbb; font-size: 14px; margin-bottom: 2px;">⚠️ 注意：当心乒乓球飞出球桌边缘！！！</p>
+            <p style="color: #bbb; font-size: 14px; margin-bottom: 2px;">⚠️ 规则：双方不能越过中线网。</p>
+            <p style="color: #bbb; font-size: 14px; margin-bottom: 6px;">如果不小心在己方区域把球打出上下边界，对方得分。</p>
             
             <!-- 头像选择区域 -->
-            <div id="avatar-selection" style="margin: 30px 0; color: white;">
-                <div style="margin-bottom: 25px;">
-                    <h3 style="color: #4CAF50; margin-bottom: 10px;">学生选手头像选择</h3>
-                    <div style="display: flex; gap: 20px; justify-content: center;">
+            <div id="avatar-selection" style="margin: 5px 0; color: white;">
+                <div style="margin-bottom: 10px;">
+                    <h3 style="color: #4CAF50; font-size: 14px; margin-bottom: 4px;">学生选手头像选择</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
                         <div class="avatar-option" data-player="1" data-avatar="学生头像1.png">
-                            <img src="学生头像1.png" alt="学生头像1" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #4CAF50; cursor: pointer;">
-                            <p style="margin-top: 5px; font-size: 14px;">学生头像1</p>
+                            <img src="学生头像1.png" alt="学生头像1" style="width: 60px; height: 60px; border-radius: 10px; border: 2px solid #4CAF50; cursor: pointer;">
                         </div>
                         <div class="avatar-option" data-player="1" data-avatar="学生头像2.png">
-                            <img src="学生头像2.png" alt="学生头像2" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #4CAF50; cursor: pointer;">
-                            <p style="margin-top: 5px; font-size: 14px;">学生头像2</p>
+                            <img src="学生头像2.png" alt="学生头像2" style="width: 60px; height: 60px; border-radius: 10px; border: 2px solid #4CAF50; cursor: pointer;">
                         </div>
                     </div>
                 </div>
                 
                 <div>
-                    <h3 style="color: #FF5722; margin-bottom: 10px;">国乒选手头像选择</h3>
-                    <div style="display: flex; gap: 20px; justify-content: center;">
+                    <h3 style="color: #FF5722; font-size: 14px; margin-bottom: 4px;">国乒选手头像选择</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
                         <div class="avatar-option" data-player="2" data-avatar="国乒头像1.png">
-                            <img src="国乒头像1.png" alt="国乒头像1" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #FF5722; cursor: pointer;">
-                            <p style="margin-top: 5px; font-size: 14px;">国乒头像1</p>
+                            <img src="国乒头像1.png" alt="国乒头像1" style="width: 60px; height: 60px; border-radius: 10px; border: 2px solid #FF5722; cursor: pointer;">
                         </div>
                         <div class="avatar-option" data-player="2" data-avatar="国乒头像2.png">
-                            <img src="国乒头像2.png" alt="国乒头像2" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #FF5722; cursor: pointer;">
-                            <p style="margin-top: 5px; font-size: 14px;">国乒头像2</p>
+                            <img src="国乒头像2.png" alt="国乒头像2" style="width: 60px; height: 60px; border-radius: 10px; border: 2px solid #FF5722; cursor: pointer;">
                         </div>
                     </div>
                 </div>
