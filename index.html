@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双人乒乓球对战</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #222;
+            user-select: none;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* 球桌样式 */
+        #table {
+            position: absolute;
+            width: 80%;
+            height: 70%;
+            background-color: #005500;
+            border: 10px solid #FFF;
+            border-radius: 5px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            box-sizing: border-box; 
+        }
+        
+        #net {
+            position: absolute;
+            width: 10px; 
+            height: 104%;
+            background-color: #EEE;
+            left: 50%;
+            top: -2%;
+            transform: translateX(-50%);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        #table::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.5);
+            top: 50%;
+            left: 0;
+        }
+        
+        .player {
+            position: absolute;
+            width: 80px;  
+            height: 80px; 
+            background-size: cover; 
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%; 
+            border: 3px solid #fff; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5); 
+            z-index: 10;
+            transition: transform 0.05s;
+            box-sizing: border-box; 
+        }
+
+        #player1 {
+            background-image: url('https://static.tcamp.qq.com/gallery/prod/2026/1/14/f0ab188f9cdf6115/00c30fb4-cda2-4d09-88c2-55212233ebfa.webp');
+        }
+        
+        #player2 {
+            background-image: url('https://static.tcamp.qq.com/gallery/prod/2026/1/19/933e5eeba0467984/f25ead74-9540-4867-b4c1-f40d4fcfcde8.jpeg');
+        }
+        
+        #ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: none;
+            box-shadow: 0 0 8px rgba(0,0,0,0.6);
+        }
+        
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        #status-msg {
+            position: absolute;
+            top: 35%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #ff3333;
+            font-size: 60px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px #fff;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+            z-index: 18;
+            pointer-events: none;
+        }
+
+        #status-msg.show {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* 发球提示信息样式 */
+        #serve-msg {
+            position: absolute;
+            top: 60%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #ffff00;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 18;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s; 
+        }
+
+        #serve-msg.show {
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 16px;
+            z-index: 15;
+            pointer-events: none;
+        }
+        
+        .control-group {
+            display: inline-block;
+            margin: 0 40px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .key {
+            display: inline-block;
+            background: #fff;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+            margin: 0 2px;
+        }
+
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #game-over { display: none; }
+        
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button.mode-pve {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+
+        button:hover { transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">0 - 0</div>
+        <div id="status-msg">出界</div>
+        <div id="serve-msg">按 空格键 发球</div>
+
+        <div id="table">
+            <div id="net"></div>
+        </div>
+        
+        <div id="player1" class="player"></div>
+        <div id="player2" class="player"></div>
+        <div id="ball"></div>
+        
+        <div id="controls">
+            <div class="control-group">
+                <div style="margin-bottom:5px; color:#aaa;">Player 1</div>
+                <span class="key">W</span><span class="key">S</span><span class="key">A</span><span class="key">D</span>
+            </div>
+            <div class="control-group" id="p2-controls">
+                <div style="margin-bottom:5px; color:#aaa;">Player 2</div>
+                <span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>
+            </div>
+        </div>
+        
+        <div id="start-screen">
+            <h1 style="color:white; font-size: 48px; margin-bottom:10px;">乒乓球对战</h1>
+            <p style="color: #bbb; margin-bottom: 5px;">⚠️ 注意：当心乒乓球飞出球桌边缘！！！</p>
+            <p style="color: #bbb; margin-bottom: 5px;">⚠️ 规则：双方不能越过中线网。</p>
+            <p style="color: #bbb; margin-bottom: 40px;">如果不小心在己方区域把球打出上下边界，对方得分。</p>
+            <div class="btn-group">
+                <button id="start-pvp">双人对战</button>
+                <button id="start-pve" class="mode-pve">人机挑战</button>
+            </div>
+        </div>
+        
+        <div id="game-over">
+            <h1 id="winner-text" style="font-size: 56px; color: #ffcc00; margin-bottom: 10px;"></h1>
+            <div id="final-score" style="color: white; font-size: 32px; margin-bottom: 30px;"></div>
+            <div class="btn-group">
+                <button id="restart-button">再来一局</button>
+                <button id="home-button" style="background: linear-gradient(135deg, #FF9800, #F57C00);">返回主页</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM 元素 ---
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        const ball = document.getElementById('ball');
+        const table = document.getElementById('table');
+        const scoreDisplay = document.getElementById('score');
+        const statusMsg = document.getElementById('status-msg');
+        const serveMsg = document.getElementById('serve-msg');
+        const p2Controls = document.getElementById('p2-controls');
+        
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const winnerText = document.getElementById('winner-text');
+        const finalScoreText = document.getElementById('final-score');
+        
+        // --- 游戏变量 ---
+        let gameActive = false;
+        let isVsComputer = false; 
+        let player1Score = 0;
+        let player2Score = 0;
+        let resetTimeoutId = null; 
+        let hitCount = 0; 
+        let isServing = false; 
+        let canServe = false; // 新增：是否允许发球（位置是否正确）
+        
+        // 物理变量
+        let ballX = 0, ballY = 0;
+        let ballSpeedX = 0, ballSpeedY = 0;
+        
+        let p1X = 0, p1Y = 0;
+        let p2X = 0, p2Y = 0;
+        
+        let servingPlayer = 1;
+        let lastHitter = 0; 
+        let isRoundOver = false; 
+        
+        // 常量
+        const PLAYER_SPEED = 10;
+        const INITIAL_SPEED = 5; 
+        const MAX_SPEED = 18;    
+        
+        // 边界缓存
+        let tableBounds = { top: 0, bottom: 0, left: 0, right: 0, centerX: 0 };
+        
+        // 按键状态
+        const keys = {};
+
+        // --- 初始化 ---
+        
+        function updateDimensions() {
+            const rect = table.getBoundingClientRect();
+            tableBounds.top = rect.top;
+            tableBounds.bottom = rect.bottom;
+            tableBounds.left = rect.left;
+            tableBounds.right = rect.right;
+            tableBounds.centerX = rect.left + rect.width / 2;
+        }
+        
+        window.addEventListener('resize', () => {
+            updateDimensions();
+            if (!gameActive) resetPlayersPositions();
+        });
+        updateDimensions();
+        
+        // --- 游戏流程 ---
+
+        function initGame(vsComputer) {
+            isVsComputer = vsComputer;
+            player1Score = 0;
+            player2Score = 0;
+            servingPlayer = 1; // 游戏开始默认P1发球
+            updateScoreDisplay();
+            
+            // 更新控制提示
+            if (isVsComputer) {
+                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">Player 2</div><span class="key" style="background:#2196F3; color:white; width:60px;">AI</span>';
+            } else {
+                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">Player 2</div><span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>';
+            }
+
+            gameActive = true;
+            isRoundOver = false; 
+            resetPlayersPositions();
+            resetBall();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function resetPlayersPositions() {
+            const centerY = window.innerHeight / 2 - 40;
+            p1X = tableBounds.left - 100; 
+            if (p1X < 0) p1X = 10; 
+            p1Y = centerY;
+            
+            p2X = tableBounds.right + 20;
+            if (p2X > window.innerWidth - 90) p2X = window.innerWidth - 90;
+            p2Y = centerY;
+            updatePlayerVisuals();
+        }
+        
+        function resetBall() {
+            ball.style.display = 'block';
+            statusMsg.classList.remove('show'); 
+            isRoundOver = false; 
+            hitCount = 0; 
+            isServing = true; 
+            
+            serveMsg.classList.add('show'); 
+            
+            updateBallToPaddle(); 
+            updateBallVisuals();
+            checkServePosition(); // 初始化时立即检查一次
+        }
+
+        function updateBallToPaddle() {
+            if (servingPlayer === 1) {
+                ballX = p1X + 85; 
+                ballY = p1Y + 30;
+                lastHitter = 1; 
+            } else {
+                ballX = p2X - 25; 
+                ballY = p2Y + 30;
+                lastHitter = 2; 
+            }
+        }
+
+        // 新增：检查发球位置是否合法
+        function checkServePosition() {
+            let isValid = false;
+            let warningText = "";
+            
+            // 检测逻辑：玩家必须在垂直方向上与球台有一定的重叠
+            // 避免玩家跑到屏幕最上方或最下方发球
+            const tTop = tableBounds.top;
+            const tBottom = tableBounds.bottom;
+            
+            if (servingPlayer === 1) {
+                // P1 检查
+                // 允许一定的宽容度，只要玩家大部分身体在球台垂直范围内即可
+                if (p1Y + 60 > tTop && p1Y + 20 < tBottom) {
+                     isValid = true;
+                } else {
+                     warningText = "请回到球台左侧";
+                }
+            } else {
+                // P2 检查
+                if (p2Y + 60 > tTop && p2Y + 20 < tBottom) {
+                     isValid = true;
+                } else {
+                     warningText = "请回到球台右侧";
+                }
+            }
+            
+            if (isValid) {
+                serveMsg.textContent = "按 空格键 发球";
+                serveMsg.style.color = "#ffff00"; // 黄色
+                canServe = true;
+            } else {
+                serveMsg.textContent = warningText;
+                serveMsg.style.color = "#ff3333"; // 红色警告
+                canServe = false;
+            }
+        }
+
+        function launchBall() {
+            if (!canServe) return; // 如果位置不正确，禁止发球
+
+            isServing = false;
+            serveMsg.classList.remove('show');
+            
+            if (servingPlayer === 1) {
+                ballSpeedX = INITIAL_SPEED;
+            } else {
+                ballSpeedX = -INITIAL_SPEED;
+            }
+            ballSpeedY = (Math.random() * 2 - 1); 
+        }
+        
+        function handleScore(winner) {
+            if (winner === 1) player1Score++;
+            else player2Score++;
+            
+            updateScoreDisplay();
+            checkGameOver();
+            
+            if (gameActive) {
+                // 发球权给丢分的一方
+                servingPlayer = (winner === 1 ? 2 : 1); 
+                
+                if (resetTimeoutId) clearTimeout(resetTimeoutId);
+                resetTimeoutId = setTimeout(() => {
+                    if(gameActive) resetBall();
+                }, 800);
+            }
+        }
+        
+        function showOutMsg() {
+            statusMsg.textContent = "出界";
+            statusMsg.classList.add('show');
+        }
+
+        function checkGameOver() {
+            const isOver = (player1Score >= 11 || player2Score >= 11) && Math.abs(player1Score - player2Score) >= 2;
+            if (isOver) {
+                gameActive = false;
+                serveMsg.classList.remove('show');
+                if (player1Score > player2Score) {
+                    winnerText.textContent = 'Player 1 获胜!';
+                    winnerText.style.color = '#4CAF50';
+                } else {
+                    winnerText.textContent = isVsComputer ? 'AI获胜!' : 'Player 2 获胜!';
+                    winnerText.style.color = '#2196F3';
+                }
+                finalScoreText.textContent = `${player1Score} - ${player2Score}`;
+                gameOverScreen.style.display = 'flex';
+            }
+        }
+
+        // --- 核心循环 ---
+        
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            handlePlayerMovement();
+            
+            if (isServing) {
+                // 发球阶段：实时更新球的位置和检查玩家站位
+                checkServePosition();
+                updateBallToPaddle();
+                updateBallVisuals();
+            } else if (!isRoundOver) {
+                ballX += ballSpeedX;
+                ballY += ballSpeedY;
+                updateBallVisuals();
+                
+                // A. 上下出界
+                const ballCenterY = ballY + 10;
+                if (ballCenterY < tableBounds.top || ballCenterY > tableBounds.bottom) {
+                    showOutMsg(); 
+                    isRoundOver = true; 
+                    
+                    const centerX = window.innerWidth / 2;
+                    if (ballX < centerX) {
+                        handleScore(2); // P2 得分
+                    } else {
+                        handleScore(1); // P1 得分
+                    }
+                }
+                
+                // B. 左右得分
+                if (!isRoundOver) {
+                    if (ballX < -20) {
+                        showOutMsg(); 
+                        isRoundOver = true;
+                        handleScore(2);
+                    } else if (ballX > window.innerWidth) {
+                        showOutMsg(); 
+                        isRoundOver = true;
+                        handleScore(1);
+                    }
+                }
+                
+                // C. 碰撞
+                if (!isRoundOver) {
+                    checkPaddleCollision();
+                }
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function checkPaddleCollision() {
+            const p1Rect = { left: p1X, right: p1X + 80, top: p1Y, bottom: p1Y + 80 };
+            const p2Rect = { left: p2X, right: p2X + 80, top: p2Y, bottom: p2Y + 80 };
+            const bRect = { left: ballX, right: ballX + 20, top: ballY, bottom: ballY + 20 };
+            
+            let hasHit = false;
+            let targetX = 0, targetY = 0;
+            
+            // P1 击球
+            if (bRect.left < p1Rect.right && bRect.right > p1Rect.left && 
+                bRect.top < p1Rect.bottom && bRect.bottom > p1Rect.top) {
+                
+                if (ballSpeedX < 0) { 
+                    hasHit = true;
+                    lastHitter = 1;
+                    targetX = p2X + 40; 
+                    targetY = p2Y + 40;
+                    
+                    player1.style.transform = 'scale(1.1)';
+                    setTimeout(() => player1.style.transform = 'scale(1)', 100);
+                }
+            }
+            
+            // P2 击球
+            if (bRect.left < p2Rect.right && bRect.right > p2Rect.left && 
+                bRect.top < p2Rect.bottom && bRect.bottom > p2Rect.top) {
+                
+                if (ballSpeedX > 0) { 
+                    hasHit = true;
+                    lastHitter = 2;
+                    targetX = p1X + 40;
+                    targetY = p1Y + 40;
+                    
+                    player2.style.transform = 'scale(1.1)';
+                    setTimeout(() => player2.style.transform = 'scale(1)', 100);
+                }
+            }
+            
+            if (hasHit) {
+                hitCount++;
+                
+                let dx = targetX - ballX;
+                let dy = targetY - ballY;
+                let angle = Math.atan2(dy, dx);
+                
+                let maxNoise = Math.min(0.1 + hitCount * 0.05, 0.6);
+                let noise = (Math.random() - 0.5) * 2 * maxNoise;
+                
+                angle += noise;
+                
+                let currentSpeed = Math.hypot(ballSpeedX, ballSpeedY);
+                let newSpeed = Math.min(currentSpeed + 1.2, MAX_SPEED);
+                
+                ballSpeedX = Math.cos(angle) * newSpeed;
+                ballSpeedY = Math.sin(angle) * newSpeed;
+                
+                if (lastHitter === 1 && ballSpeedX < 0) ballSpeedX = -ballSpeedX;
+                if (lastHitter === 2 && ballSpeedX > 0) ballSpeedX = -ballSpeedX;
+                
+                if (Math.abs(ballSpeedX) < 3) {
+                     ballSpeedX = (ballSpeedX > 0 ? 3 : -3);
+                }
+            }
+        }
+        
+        function isCollidingWithTable(x, y) {
+            const pLeft = x;
+            const pRight = x + 80;
+            const pTop = y;
+            const pBottom = y + 80;
+            return (
+                pLeft < tableBounds.right &&
+                pRight > tableBounds.left &&
+                pTop < tableBounds.bottom &&
+                pBottom > tableBounds.top
+            );
+        }
+        
+        function getComputerMovement() {
+            const centerY = window.innerHeight / 2 - 40;
+            const ballCenterY = ballY + 10;
+            const p2CenterY = p2Y + 40;
+            
+            let targetY = centerY;
+            if (ballSpeedX > 0) {
+                targetY = ballCenterY - 40; 
+            }
+            
+            let targetX = tableBounds.right + 20; 
+            if (ballSpeedX > 0 && ballX > window.innerWidth / 2) {
+                targetX = tableBounds.right + 10;
+            }
+
+            let moveX = 0;
+            let moveY = 0;
+
+            if (Math.abs(p2CenterY - (targetY + 40)) > 10) { 
+                if (p2Y < targetY) moveY = PLAYER_SPEED; 
+                else if (p2Y > targetY) moveY = -PLAYER_SPEED;
+            }
+            
+            if (Math.abs(p2X - targetX) > 10) {
+                if (p2X < targetX) moveX = PLAYER_SPEED;
+                else if (p2X > targetX) moveX = -PLAYER_SPEED;
+            }
+            
+            return { moveX, moveY };
+        }
+
+        function handlePlayerMovement() {
+            // P1 (WASD)
+            let nextP1X = p1X;
+            if (keys['a']) nextP1X -= PLAYER_SPEED;
+            if (keys['d']) nextP1X += PLAYER_SPEED;
+            
+            const p1MaxX = tableBounds.centerX - 80 - 5; 
+            nextP1X = Math.max(0, Math.min(nextP1X, p1MaxX));
+            
+            if (!isCollidingWithTable(nextP1X, p1Y)) p1X = nextP1X;
+
+            let nextP1Y = p1Y;
+            if (keys['w']) nextP1Y -= PLAYER_SPEED;
+            if (keys['s']) nextP1Y += PLAYER_SPEED;
+            nextP1Y = Math.max(0, Math.min(nextP1Y, window.innerHeight - 80));
+            if (!isCollidingWithTable(p1X, nextP1Y)) p1Y = nextP1Y;
+            
+            // P2 (Arrows/AI)
+            let moveX = 0, moveY = 0;
+
+            if (isVsComputer && !isRoundOver) {
+                const aiMove = getComputerMovement();
+                moveX = aiMove.moveX;
+                moveY = aiMove.moveY;
+            } else {
+                if (keys['ArrowLeft']) moveX = -PLAYER_SPEED;
+                if (keys['ArrowRight']) moveX = PLAYER_SPEED;
+                if (keys['ArrowUp']) moveY = -PLAYER_SPEED;
+                if (keys['ArrowDown']) moveY = PLAYER_SPEED;
+            }
+
+            let nextP2X = p2X + moveX;
+            const p2MinX = tableBounds.centerX + 5; 
+            nextP2X = Math.max(p2MinX, Math.min(nextP2X, window.innerWidth - 80));
+            
+            if (!isCollidingWithTable(nextP2X, p2Y)) p2X = nextP2X;
+
+            let nextP2Y = p2Y + moveY;
+            nextP2Y = Math.max(0, Math.min(nextP2Y, window.innerHeight - 80));
+            if (!isCollidingWithTable(p2X, nextP2Y)) p2Y = nextP2Y;
+            
+            updatePlayerVisuals();
+        }
+
+        function updatePlayerVisuals() {
+            player1.style.left = p1X + 'px';
+            player1.style.top = p1Y + 'px';
+            player2.style.left = p2X + 'px';
+            player2.style.top = p2Y + 'px';
+        }
+
+        function updateBallVisuals() {
+            ball.style.left = ballX + 'px';
+            ball.style.top = ballY + 'px';
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = `${player1Score} - ${player2Score}`;
+        }
+        
+        window.addEventListener('keydown', (e) => {
+            if(gameActive) {
+                keys[e.key] = true;
+                if (e.code === 'Space' && isServing) {
+                    launchBall();
+                }
+            }
+        });
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
+        
+        document.getElementById('start-pvp').addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            initGame(false);
+        });
+
+        document.getElementById('start-pve').addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            initGame(true);
+        });
+        
+        document.getElementById('restart-button').addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            initGame(isVsComputer);
+        });
+
+        document.getElementById('home-button').addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            gameActive = false;
+        });
+    </script>
+</body>
+</html>
