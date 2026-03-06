@@ -337,7 +337,11 @@
         let servingPlayer = 1;
         let serveCount = 1; // 每个玩家连续发球的次数
         let lastHitter = 0;
-        let isRoundOver = false; 
+        let isRoundOver = false;
+
+        // 音频系统
+        let audioContext = null;
+        let hitSound = null; 
         
         // 常量
         const PLAYER_SPEED = 10;
@@ -384,9 +388,10 @@
             }
 
             gameActive = true;
-            isRoundOver = false; 
+            isRoundOver = false;
             resetPlayersPositions();
             resetBall();
+            initAudio();
             requestAnimationFrame(gameLoop);
         }
         
@@ -485,6 +490,7 @@
             else player2Score++;
 
             updateScoreDisplay();
+            playScoreSound(); // 播放得分音效
             checkGameOver();
 
             if (gameActive) {
@@ -532,6 +538,48 @@
                 gameOverScreen.style.display = 'flex';
             }
         }
+
+        // --- 音频系统 ---
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (!hitSound) {
+                hitSound = new Audio('pingpong.mp3');
+                hitSound.volume = 0.5;
+            }
+        }
+
+        function playHitSound() {
+            if (!hitSound) return;
+
+            // 重置音频到开头并播放
+            hitSound.currentTime = 0;
+            hitSound.play();
+        }
+
+        function playScoreSound() {
+            if (!audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        
 
         // --- 核心循环 ---
         
@@ -623,7 +671,8 @@
             
             if (hasHit) {
                 hitCount++;
-                
+                playHitSound(); // 播放击球音效
+
                 let dx = targetX - ballX;
                 let dy = targetY - ballY;
                 let angle = Math.atan2(dy, dx);
