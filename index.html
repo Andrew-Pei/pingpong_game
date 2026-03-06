@@ -72,11 +72,11 @@
         }
 
         #player1 {
-            background-image: url('https://static.tcamp.qq.com/gallery/prod/2026/1/14/f0ab188f9cdf6115/00c30fb4-cda2-4d09-88c2-55212233ebfa.webp');
+            background-image: url('学生头像1.png');
         }
         
         #player2 {
-            background-image: url('https://static.tcamp.qq.com/gallery/prod/2026/1/19/933e5eeba0467984/f25ead74-9540-4867-b4c1-f40d4fcfcde8.jpeg');
+            background-image: url('国乒头像1.png');
         }
         
         #ball {
@@ -252,6 +252,52 @@
 
         button:hover { transform: scale(1.05); }
         button:active { transform: scale(0.95); }
+        
+        /* 头像选择样式 */
+        .avatar-option {
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .avatar-option.selected img {
+            border-width: 5px !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .avatar-option[data-player="1"].selected img {
+            border-color: #4CAF50 !important;
+        }
+        
+        .avatar-option[data-player="2"].selected img {
+            border-color: #FF5722 !important;
+        }
+        
+        /* 头像选择样式 */
+        .avatar-option {
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .avatar-option.selected img {
+            border-width: 5px !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .avatar-option[data-player="1"].selected img {
+            border-color: #4CAF50 !important;
+        }
+        
+        .avatar-option[data-player="2"].selected img {
+            border-color: #FF5722 !important;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +331,40 @@
             <p style="color: #bbb; margin-bottom: 5px;">⚠️ 注意：当心乒乓球飞出球桌边缘！！！</p>
             <p style="color: #bbb; margin-bottom: 5px;">⚠️ 规则：双方不能越过中线网。</p>
             <p style="color: #bbb; margin-bottom: 40px;">如果不小心在己方区域把球打出上下边界，对方得分。</p>
+            
+            <!-- 头像选择区域 -->
+            <div id="avatar-selection" style="margin: 30px 0; color: white;">
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #4CAF50; margin-bottom: 10px;">学生选手头像选择</h3>
+                    <div style="display: flex; gap: 20px; justify-content: center;">
+                        <div class="avatar-option" data-player="1" data-avatar="学生头像1.png">
+                            <img src="学生头像1.png" alt="学生头像1" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #4CAF50; cursor: pointer;">
+                            <p style="margin-top: 5px; font-size: 14px;">学生头像1</p>
+                        </div>
+                        <div class="avatar-option" data-player="1" data-avatar="学生头像2.png">
+                            <img src="学生头像2.png" alt="学生头像2" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #4CAF50; cursor: pointer;">
+                            <p style="margin-top: 5px; font-size: 14px;">学生头像2</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 style="color: #FF5722; margin-bottom: 10px;">国乒选手头像选择</h3>
+                    <div style="display: flex; gap: 20px; justify-content: center;">
+                        <div class="avatar-option" data-player="2" data-avatar="国乒头像1.png">
+                            <img src="国乒头像1.png" alt="国乒头像1" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #FF5722; cursor: pointer;">
+                            <p style="margin-top: 5px; font-size: 14px;">国乒头像1</p>
+                        </div>
+                        <div class="avatar-option" data-player="2" data-avatar="国乒头像2.png">
+                            <img src="国乒头像2.png" alt="国乒头像2" style="width: 80px; height: 80px; border-radius: 10px; border: 3px solid #FF5722; cursor: pointer;">
+                            <p style="margin-top: 5px; font-size: 14px;">国乒头像2</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
             <div class="btn-group">
                 <button id="start-pvp">双人对战</button>
                 <button id="start-pve" class="mode-pve">人机挑战</button>
@@ -317,6 +397,9 @@
         const winnerText = document.getElementById('winner-text');
         const finalScoreText = document.getElementById('final-score');
         
+        // 头像选择相关元素
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        
         // --- 游戏变量 ---
         let gameActive = false;
         let isVsComputer = false; 
@@ -344,6 +427,10 @@
         // 音频系统
         let audioContext = null;
         let hitSound = null; 
+        
+        // 头像选择相关变量
+        let selectedAvatar1 = '学生头像1.png'; // 默认头像
+        let selectedAvatar2 = '国乒头像1.png'; // 默认头像
         
         // 常量
         const PLAYER_SPEED = 10;
@@ -832,6 +919,56 @@
             scoreDisplay.textContent = `${player1Games}-${player2Games} (${player1Score}-${player2Score})`;
         }
         
+        // 头像选择功能
+        function selectAvatar(player, avatarPath) {
+            // 移除该玩家所有头像的选中状态
+            document.querySelectorAll(`.avatar-option[data-player="${player}"]`).forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 添加选中状态到当前选择的头像
+            const selectedOption = document.querySelector(`.avatar-option[data-player="${player}"][data-avatar="${avatarPath}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+            
+            // 更新选中的头像变量
+            if (player === '1') {
+                selectedAvatar1 = avatarPath;
+            } else {
+                selectedAvatar2 = avatarPath;
+            }
+            
+            // 更新玩家头像
+            if (player === '1') {
+                player1.style.backgroundImage = `url('${avatarPath}')`;
+            } else {
+                player2.style.backgroundImage = `url('${avatarPath}')`;
+            }
+        }
+        
+        // 初始化头像选择
+        function initAvatarSelection() {
+            // 为所有头像选项添加点击事件
+            avatarOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const player = option.getAttribute('data-player');
+                    const avatarPath = option.getAttribute('data-avatar');
+                    selectAvatar(player, avatarPath);
+                });
+            });
+            
+            // 设置默认选中状态
+            selectAvatar('1', selectedAvatar1);
+            selectAvatar('2', selectedAvatar2);
+        }
+        
+        // 更新玩家头像
+        function updatePlayerAvatars() {
+            player1.style.backgroundImage = `url('${selectedAvatar1}')`;
+            player2.style.backgroundImage = `url('${selectedAvatar2}')`;
+        }
+        
         window.addEventListener('keydown', (e) => {
             if(gameActive) {
                 keys[e.key] = true;
@@ -844,11 +981,13 @@
         
         document.getElementById('start-pvp').addEventListener('click', () => {
             startScreen.style.display = 'none';
+            updatePlayerAvatars(); // 确保使用选中的头像
             initGame(false);
         });
 
         document.getElementById('start-pve').addEventListener('click', () => {
             startScreen.style.display = 'none';
+            updatePlayerAvatars(); // 确保使用选中的头像
             initGame(true);
         });
         
@@ -861,6 +1000,11 @@
             gameOverScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
+        });
+        
+        // 页面加载完成后初始化头像选择
+        window.addEventListener('DOMContentLoaded', () => {
+            initAvatarSelection();
         });
     </script>
 </body>
