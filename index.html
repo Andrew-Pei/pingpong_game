@@ -129,6 +129,31 @@
             pointer-events: none;
         }
 
+        #score .score-label {
+            color: #ccc;
+            font-size: 40px;
+            margin: 0 5px;
+        }
+        
+        #score .score-p1 {
+            color: #4CAF50;
+        }
+        
+        #score .score-p2 {
+            color: #FF5722;
+        }
+        
+        #score .score-separator {
+            color: white;
+            margin: 0 5px;
+        }
+        
+        #score .games,
+        #score .points {
+            display: inline-block;
+            margin: 0 10px;
+        }
+
         #status-msg {
             position: absolute;
             top: 35%;
@@ -440,7 +465,21 @@
 <body>
     <div id="game-container">
         <div id="main-title"><img src="校徽.png" alt="校徽">重庆八中AI-Coding" 一'乒'到底"挑战赛</div>
-        <div id="score">0 - 0</div>
+        <div id="score">
+    <span class="score-label">局数:</span>
+    <span class="games">
+        <span class="score-p1">0</span>
+        <span class="score-separator">-</span>
+        <span class="score-p2">0</span>
+    </span>
+    <span class="score-separator"> | </span>
+    <span class="score-label">比分:</span>
+    <span class="points">
+        <span class="score-p1">0</span>
+        <span class="score-separator">-</span>
+        <span class="score-p2">0</span>
+    </span>
+</div>
         <div id="status-msg">出界</div>
         <div id="serve-msg">按 空格键 发球</div>
 
@@ -456,7 +495,7 @@
         <div id="touch-controls">
             <!-- 玩家1方向控制 -->
             <div class="touch-control-group">
-                <div class="touch-control-label">Player 1 方向控制</div>
+                <div class="touch-control-label">八中队 方向控制</div>
                 <div class="touch-direction-buttons">
                     <div class="touch-button up" data-action="p1-up">↑</div>
                     <div class="touch-button down" data-action="p1-down">↓</div>
@@ -474,7 +513,7 @@
             
             <!-- 玩家2方向控制 -->
             <div class="touch-control-group">
-                <div class="touch-control-label">Player 2 方向控制</div>
+                <div class="touch-control-label">国乒队 方向控制</div>
                 <div class="touch-direction-buttons">
                     <div class="touch-button up" data-action="p2-up">↑</div>
                     <div class="touch-button down" data-action="p2-down">↓</div>
@@ -487,11 +526,11 @@
         
         <div id="controls">
             <div class="control-group">
-                <div style="margin-bottom:5px; color:#aaa;">Player 1</div>
+                <div style="margin-bottom:5px; color:#aaa;">八中队</div>
                 <span class="key">W</span><span class="key">S</span><span class="key">A</span><span class="key">D</span>
             </div>
             <div class="control-group" id="p2-controls">
-                <div style="margin-bottom:5px; color:#aaa;">Player 2</div>
+                <div style="margin-bottom:5px; color:#aaa;">国乒队</div>
                 <span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>
             </div>
         </div>
@@ -655,9 +694,9 @@
             
             // 更新控制提示
             if (isVsComputer) {
-                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">Player 2</div><span class="key" style="background:#2196F3; color:white; width:60px;">AI</span>';
+                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">国乒队</div><span class="key" style="background:#2196F3; color:white; width:60px;">AI</span>';
             } else {
-                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">Player 2</div><span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>';
+                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">国乒队</div><span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>';
             }
 
             gameActive = true;
@@ -787,9 +826,9 @@
         function showOutMsg(winner) {
             let msg = "";
             if (winner === 1) {
-                msg = "Player1+1分";
+                msg = "八中队+1分";
             } else {
-                msg = isVsComputer ? "AI+1分" : "Player2+1分";
+                msg = isVsComputer ? "AI+1分" : "国乒队+1分";
             }
             statusMsg.textContent = msg;
             statusMsg.classList.add('show');
@@ -814,10 +853,10 @@
                     serveMsg.classList.remove('show');
 
                     if (player1Games > player2Games) {
-                        winnerText.textContent = 'Player 1 获胜!';
+                        winnerText.textContent = '八中队 获胜!';
                         winnerText.style.color = '#4CAF50';
                     } else {
-                        winnerText.textContent = isVsComputer ? 'AI获胜!' : 'Player 2 获胜!';
+                        winnerText.textContent = isVsComputer ? 'AI获胜!' : '国乒队 获胜!';
                         winnerText.style.color = '#2196F3';
                     }
 
@@ -1098,7 +1137,21 @@
         }
 
         function updateScoreDisplay() {
-            scoreDisplay.textContent = `${player1Games}-${player2Games} (${player1Score}-${player2Score})`;
+            scoreDisplay.innerHTML = `
+                <span class="score-label">局数:</span>
+                <span class="games">
+                    <span class="score-p1">${player1Games}</span>
+                    <span class="score-separator">-</span>
+                    <span class="score-p2">${player2Games}</span>
+                </span>
+                <span class="score-separator"> | </span>
+                <span class="score-label">比分:</span>
+                <span class="points">
+                    <span class="score-p1">${player1Score}</span>
+                    <span class="score-separator">-</span>
+                    <span class="score-p2">${player2Score}</span>
+                </span>
+            `;
         }
         
         // 头像选择功能
