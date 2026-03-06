@@ -93,9 +93,31 @@
             box-shadow: 0 0 8px rgba(0,0,0,0.6);
         }
         
+        #main-title {
+            position: absolute;
+            top: 5px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #FFD700;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 16;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #main-title img {
+            height: 35px;
+            margin-right: 10px;
+        }
+
         #score {
             position: absolute;
-            top: 20px;
+            top: 45px;
             left: 0;
             width: 100%;
             text-align: center;
@@ -234,6 +256,7 @@
 </head>
 <body>
     <div id="game-container">
+        <div id="main-title"><img src="校徽.png" alt="校徽">重庆八中AI-Coding" 一'乒'到底"挑战赛</div>
         <div id="score">0 - 0</div>
         <div id="status-msg">出界</div>
         <div id="serve-msg">按 空格键 发球</div>
@@ -312,7 +335,8 @@
         let p2X = 0, p2Y = 0;
         
         let servingPlayer = 1;
-        let lastHitter = 0; 
+        let serveCount = 1; // 每个玩家连续发球的次数
+        let lastHitter = 0;
         let isRoundOver = false; 
         
         // 常量
@@ -459,14 +483,21 @@
         function handleScore(winner) {
             if (winner === 1) player1Score++;
             else player2Score++;
-            
+
             updateScoreDisplay();
             checkGameOver();
-            
+
             if (gameActive) {
-                // 发球权给丢分的一方
-                servingPlayer = (winner === 1 ? 2 : 1); 
-                
+                // 连续发球2次后交换发球权
+                if (serveCount < 2) {
+                    // 保持当前发球权，发球次数+1
+                    serveCount++;
+                } else {
+                    // 交换发球权，重置发球次数
+                    servingPlayer = (servingPlayer === 1 ? 2 : 1);
+                    serveCount = 1;
+                }
+
                 if (resetTimeoutId) clearTimeout(resetTimeoutId);
                 resetTimeoutId = setTimeout(() => {
                     if(gameActive) resetBall();
