@@ -322,6 +322,8 @@
         let isVsComputer = false; 
         let player1Score = 0;
         let player2Score = 0;
+        let player1Games = 0;
+        let player2Games = 0;
         let resetTimeoutId = null; 
         let hitCount = 0; 
         let isServing = false; 
@@ -377,6 +379,8 @@
             isVsComputer = vsComputer;
             player1Score = 0;
             player2Score = 0;
+            player1Games = 0; // 重置局数
+            player2Games = 0;
             servingPlayer = 1; // 游戏开始默认P1发球
             updateScoreDisplay();
             
@@ -523,19 +527,46 @@
         }
 
         function checkGameOver() {
-            const isOver = (player1Score >= 11 || player2Score >= 11) && Math.abs(player1Score - player2Score) >= 2;
-            if (isOver) {
-                gameActive = false;
-                serveMsg.classList.remove('show');
+            // 5分一局
+            const isGameWin = (player1Score >= 5 || player2Score >= 5) && Math.abs(player1Score - player2Score) >= 2;
+
+            if (isGameWin) {
+                // 记录局数
                 if (player1Score > player2Score) {
-                    winnerText.textContent = 'Player 1 获胜!';
-                    winnerText.style.color = '#4CAF50';
+                    player1Games++;
                 } else {
-                    winnerText.textContent = isVsComputer ? 'AI获胜!' : 'Player 2 获胜!';
-                    winnerText.style.color = '#2196F3';
+                    player2Games++;
                 }
-                finalScoreText.textContent = `${player1Score} - ${player2Score}`;
-                gameOverScreen.style.display = 'flex';
+
+                // 检查是否3局2胜
+                if (player1Games >= 2 || player2Games >= 2) {
+                    // 整个比赛结束
+                    gameActive = false;
+                    serveMsg.classList.remove('show');
+
+                    if (player1Games > player2Games) {
+                        winnerText.textContent = 'Player 1 获胜!';
+                        winnerText.style.color = '#4CAF50';
+                    } else {
+                        winnerText.textContent = isVsComputer ? 'AI获胜!' : 'Player 2 获胜!';
+                        winnerText.style.color = '#2196F3';
+                    }
+
+                    finalScoreText.textContent = `${player1Games}-${player2Games} (最后比分: ${player1Score}-${player2Score})`;
+                    gameOverScreen.style.display = 'flex';
+                } else {
+                    // 下一局
+                    player1Score = 0;
+                    player2Score = 0;
+                    servingPlayer = 1; // 每局重新开始，P1先发球
+                    serveCount = 1;
+                    updateScoreDisplay();
+
+                    if (resetTimeoutId) clearTimeout(resetTimeoutId);
+                    resetTimeoutId = setTimeout(() => {
+                        if (gameActive) resetBall();
+                    }, 1500);
+                }
             }
         }
 
@@ -798,7 +829,7 @@
         }
 
         function updateScoreDisplay() {
-            scoreDisplay.textContent = `${player1Score} - ${player2Score}`;
+            scoreDisplay.textContent = `${player1Games}-${player2Games} (${player1Score}-${player2Score})`;
         }
         
         window.addEventListener('keydown', (e) => {
