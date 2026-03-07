@@ -1401,6 +1401,8 @@
             // 恢复游戏
             gameActive = true;
             resetBall();
+            // 重新启动游戏循环
+            requestAnimationFrame(gameLoop);
         });
 
         document.getElementById('round-home-button').addEventListener('click', () => {
