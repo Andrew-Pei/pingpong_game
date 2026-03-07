@@ -422,28 +422,6 @@
             background-color: rgba(76, 175, 80, 0.5);
         }
         
-        #serve-touch-button {
-            width: 140px;
-            height: 50px;
-            background-color: rgba(255, 193, 7, 0.3);
-            border-color: rgba(255, 193, 7, 0.6);
-            border-radius: 25px;
-            font-size: 16px;
-            text-align: center;
-            padding: 8px;
-            line-height: 1.2;
-        }
-        
-        #serve-touch-button:active {
-            background-color: rgba(255, 193, 7, 0.5);
-        }
-        
-        #serve-touch-button.active {
-            background-color: rgba(255, 193, 7, 0.7);
-            border-color: rgba(255, 193, 7, 1);
-            box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
-        }
-        
         /* 移动端适配 */
         @media (max-width: 768px) {
             .touch-direction-buttons {
@@ -505,14 +483,8 @@
                     <div class="touch-button down" data-action="p1-down">↓</div>
                     <div class="touch-button left" data-action="p1-left">←</div>
                     <div class="touch-button right" data-action="p1-right">→</div>
-                    <div class="touch-button center" data-action="p1-stop">●</div>
+                    <div class="touch-button center" data-action="p1-serve">发球</div>
                 </div>
-            </div>
-            
-            <!-- 发球按钮 -->
-            <div class="touch-control-group">
-                <div class="touch-control-label">发球控制</div>
-                <div id="serve-touch-button" class="touch-button">点击发球</div>
             </div>
             
             <!-- 玩家2方向控制 -->
@@ -523,7 +495,7 @@
                     <div class="touch-button down" data-action="p2-down">↓</div>
                     <div class="touch-button left" data-action="p2-left">←</div>
                     <div class="touch-button right" data-action="p2-right">→</div>
-                    <div class="touch-button center" data-action="p2-stop">●</div>
+                    <div class="touch-button center" data-action="p2-serve">发球</div>
                 </div>
             </div>
         </div>
@@ -819,11 +791,19 @@
             }
             
             if (isValid) {
-                serveMsg.textContent = "按 空格键 发球";
+                if (servingPlayer === 1) {
+                    serveMsg.textContent = "八中队：点击中间'发球'按钮发球";
+                } else {
+                    serveMsg.textContent = isVsComputer ? "AI准备发球" : "国乒队：点击中间'发球'按钮发球";
+                }
                 serveMsg.style.color = "#ffff00"; // 黄色
                 canServe = true;
             } else {
-                serveMsg.textContent = warningText;
+                if (servingPlayer === 1) {
+                    serveMsg.textContent = "八中队：" + warningText;
+                } else {
+                    serveMsg.textContent = isVsComputer ? "AI发球位置不正确" : "国乒队：" + warningText;
+                }
                 serveMsg.style.color = "#ff3333"; // 红色警告
                 canServe = false;
             }
@@ -1310,115 +1290,66 @@
             // 方向按钮触控事件
             const touchButtons = document.querySelectorAll('.touch-button[data-action]');
             touchButtons.forEach(button => {
-                // 鼠标事件（用于桌面测试）
-                button.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action === 'p1-stop') {
-                        // 停止所有P1方向
-                        touchKeys['p1-up'] = false;
-                        touchKeys['p1-down'] = false;
-                        touchKeys['p1-left'] = false;
-                        touchKeys['p1-right'] = false;
-                    } else if (action === 'p2-stop') {
-                        // 停止所有P2方向
-                        touchKeys['p2-up'] = false;
-                        touchKeys['p2-down'] = false;
-                        touchKeys['p2-left'] = false;
-                        touchKeys['p2-right'] = false;
-                    } else {
-                        touchKeys[action] = true;
-                    }
-                });
+                const action = button.getAttribute('data-action');
                 
-                button.addEventListener('mouseup', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action !== 'p1-stop' && action !== 'p2-stop') {
-                        touchKeys[action] = false;
-                    }
-                });
-                
-                button.addEventListener('mouseleave', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action !== 'p1-stop' && action !== 'p2-stop') {
-                        touchKeys[action] = false;
-                    }
-                });
-                
-                // 触摸事件（用于移动设备）
-                button.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action === 'p1-stop') {
-                        // 停止所有P1方向
-                        touchKeys['p1-up'] = false;
-                        touchKeys['p1-down'] = false;
-                        touchKeys['p1-left'] = false;
-                        touchKeys['p1-right'] = false;
-                    } else if (action === 'p2-stop') {
-                        // 停止所有P2方向
-                        touchKeys['p2-up'] = false;
-                        touchKeys['p2-down'] = false;
-                        touchKeys['p2-left'] = false;
-                        touchKeys['p2-right'] = false;
-                    } else {
-                        touchKeys[action] = true;
-                    }
-                });
-                
-                button.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action !== 'p1-stop' && action !== 'p2-stop') {
-                        touchKeys[action] = false;
-                    }
-                });
-                
-                button.addEventListener('touchcancel', (e) => {
-                    e.preventDefault();
-                    const action = button.getAttribute('data-action');
-                    if (action !== 'p1-stop' && action !== 'p2-stop') {
-                        touchKeys[action] = false;
-                    }
-                });
-            });
-            
-            // 发球按钮触控事件
-            const serveButton = document.getElementById('serve-touch-button');
-            
-            function handleServeTouch() {
-                if (gameActive && isServing) {
-                    launchBall();
-                }
-            }
-            
-            // 鼠标事件
-            serveButton.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                handleServeTouch();
-            });
-            
-            // 触摸事件
-            serveButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                handleServeTouch();
-            });
-            
-            // 更新发球按钮状态
-            function updateServeButton() {
-                if (gameActive && isServing) {
-                    serveButton.textContent = '点击发球';
-                    serveButton.classList.add('active');
+                // 检查是否为发球按钮
+                if (action === 'p1-serve' || action === 'p2-serve') {
+                    // 发球按钮事件处理
+                    button.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        if (gameActive && isServing) {
+                            // 检查是否是当前发球玩家
+                            if ((action === 'p1-serve' && servingPlayer === 1) || 
+                                (action === 'p2-serve' && servingPlayer === 2)) {
+                                launchBall();
+                            }
+                        }
+                    });
+                    
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (gameActive && isServing) {
+                            // 检查是否是当前发球玩家
+                            if ((action === 'p1-serve' && servingPlayer === 1) || 
+                                (action === 'p2-serve' && servingPlayer === 2)) {
+                                launchBall();
+                            }
+                        }
+                    });
                 } else {
-                    serveButton.textContent = '等待发球';
-                    serveButton.classList.remove('active');
+                    // 方向按钮事件处理
+                    button.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = true;
+                    });
+                    
+                    button.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = false;
+                    });
+                    
+                    button.addEventListener('mouseleave', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = false;
+                    });
+                    
+                    // 触摸事件（用于移动设备）
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = true;
+                    });
+                    
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = false;
+                    });
+                    
+                    button.addEventListener('touchcancel', (e) => {
+                        e.preventDefault();
+                        touchKeys[action] = false;
+                    });
                 }
-            }
-            
-            // 监听游戏状态变化
-            setInterval(updateServeButton, 100);
+            });
         }
         
         // 初始化触控控制
