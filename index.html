@@ -237,7 +237,7 @@
             margin: 0 2px;
         }
 
-        #start-screen, #game-over {
+        #start-screen, #game-over, #round-result {
             position: absolute;
             top: 0;
             left: 0;
@@ -254,6 +254,7 @@
         }
 
         #game-over { display: none; }
+        #round-result { display: none; }
         
         .btn-group {
             display: flex;
@@ -587,6 +588,17 @@
                 <button id="home-button" style="background: linear-gradient(135deg, #FF9800, #F57C00);">返回主页</button>
             </div>
         </div>
+        
+        <div id="round-result">
+            <h1 id="round-title" style="font-size: 48px; color: #4CAF50; margin-bottom: 10px;">第<span id="round-number">1</span>局结束</h1>
+            <div id="round-winner" style="color: #ffcc00; font-size: 36px; margin-bottom: 15px;">八中队 赢得本局！</div>
+            <div id="round-score" style="color: white; font-size: 28px; margin-bottom: 10px;">本局比分：<span id="round-score-p1">5</span>-<span id="round-score-p2">3</span></div>
+            <div id="round-games" style="color: white; font-size: 24px; margin-bottom: 30px;">当前局数：<span id="round-games-p1">1</span>-<span id="round-games-p2">0</span></div>
+            <div class="btn-group">
+                <button id="continue-button">继续下一局</button>
+                <button id="round-home-button" style="background: linear-gradient(135deg, #FF9800, #F57C00);">返回主页</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -604,6 +616,16 @@
         const gameOverScreen = document.getElementById('game-over');
         const winnerText = document.getElementById('winner-text');
         const finalScoreText = document.getElementById('final-score');
+        const roundResultScreen = document.getElementById('round-result');
+        const roundTitle = document.getElementById('round-title');
+        const roundNumber = document.getElementById('round-number');
+        const roundWinner = document.getElementById('round-winner');
+        const roundScoreP1 = document.getElementById('round-score-p1');
+        const roundScoreP2 = document.getElementById('round-score-p2');
+        const roundGamesP1 = document.getElementById('round-games-p1');
+        const roundGamesP2 = document.getElementById('round-games-p2');
+        const continueButton = document.getElementById('continue-button');
+        const roundHomeButton = document.getElementById('round-home-button');
         
         // 头像选择相关元素
         const avatarOptions = document.querySelectorAll('.avatar-option');
@@ -862,17 +884,29 @@
                     finalScoreText.textContent = `${player1Games}-${player2Games} (最后比分: ${player1Score}-${player2Score})`;
                     gameOverScreen.style.display = 'flex';
                 } else {
-                    // 下一局
-                    player1Score = 0;
-                    player2Score = 0;
-                    servingPlayer = 1; // 每局重新开始，P1先发球
-                    serveCount = 1;
-                    updateScoreDisplay();
-
-                    if (resetTimeoutId) clearTimeout(resetTimeoutId);
-                    resetTimeoutId = setTimeout(() => {
-                        if (gameActive) resetBall();
-                    }, 1500);
+                    // 显示结算页面
+                    gameActive = false;
+                    serveMsg.classList.remove('show');
+                    
+                    // 更新结算页面内容
+                    const totalGames = player1Games + player2Games;
+                    roundNumber.textContent = totalGames;
+                    
+                    if (player1Score > player2Score) {
+                        roundWinner.textContent = '八中队 赢得本局！';
+                        roundWinner.style.color = '#4CAF50';
+                    } else {
+                        roundWinner.textContent = isVsComputer ? 'AI赢得本局！' : '国乒队 赢得本局！';
+                        roundWinner.style.color = '#2196F3';
+                    }
+                    
+                    roundScoreP1.textContent = player1Score;
+                    roundScoreP2.textContent = player2Score;
+                    roundGamesP1.textContent = player1Games;
+                    roundGamesP2.textContent = player2Games;
+                    
+                    // 显示结算页面
+                    roundResultScreen.style.display = 'flex';
                 }
             }
         }
@@ -1351,6 +1385,26 @@
 
         document.getElementById('home-button').addEventListener('click', () => {
             gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            gameActive = false;
+        });
+        
+        // 结算页面按钮事件监听器
+        document.getElementById('continue-button').addEventListener('click', () => {
+            roundResultScreen.style.display = 'none';
+            // 重置当前局比分
+            player1Score = 0;
+            player2Score = 0;
+            servingPlayer = 1; // 每局重新开始，P1先发球
+            serveCount = 1;
+            updateScoreDisplay();
+            // 恢复游戏
+            gameActive = true;
+            resetBall();
+        });
+
+        document.getElementById('round-home-button').addEventListener('click', () => {
+            roundResultScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
         });
