@@ -332,18 +332,20 @@
         }
         
         /* 触控控制样式 */
+        /* 触控控制样式 */
         #touch-controls {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 70%;
             display: flex;
             justify-content: space-between;
-            padding: 120px 50px;
+            padding: 0;
             box-sizing: border-box;
             z-index: 15;
             pointer-events: none;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
         }
         
         .touch-control-group {
@@ -351,6 +353,8 @@
             flex-direction: column;
             align-items: center;
             pointer-events: auto;
+            position: relative;
+            top: 100px; /* 向下偏移，放在球桌下方但仍位于球桌范围内 */
         }
         
         .touch-control-label {
