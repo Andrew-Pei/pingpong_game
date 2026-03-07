@@ -811,6 +811,9 @@
             isServing = false;
             serveMsg.classList.remove('show');
             
+            // 播放发球音效
+            playHitSound();
+            
             if (servingPlayer === 1) {
                 ballSpeedX = INITIAL_SPEED;
             } else {
@@ -934,9 +937,10 @@
         function playHitSound() {
             if (!hitSound) return;
 
-            // 重置音频到开头并播放
+            // 设置音量并重置音频到开头播放
+            hitSound.volume = 1.0;
             hitSound.currentTime = 0;
-            hitSound.play();
+            hitSound.play().catch(e => console.log("Audio play error:", e));
         }
 
         function playScoreSound() {
@@ -952,7 +956,7 @@
             oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
             oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
 
-            gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(1.0, audioContext.currentTime); // 提高音量
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
 
             oscillator.start(audioContext.currentTime);
@@ -962,9 +966,10 @@
         function playClappingSound() {
             if (!clappingSound) return;
 
-            // 重置音频到开头并播放
+            // 设置音量并重置音频到开头播放
+            clappingSound.volume = 1.0;
             clappingSound.currentTime = 0;
-            clappingSound.play();
+            clappingSound.play().catch(e => console.log("Audio play error:", e));
         }
 
         
