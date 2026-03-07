@@ -649,6 +649,11 @@
         let clappingSound = null;
         let bgmSound = null;
 
+        // AI发球相关变量
+        let aiShouldServe = false;
+        let aiServeStartTime = 0;
+        const AI_SERVE_DELAY = 800; // AI发球延迟（毫秒）
+
         // 头像选择相关变量
         let selectedAvatar1 = '学生头像1.jpg'; // 默认头像
         let selectedAvatar2 = '国乒头像1.jpg'; // 默认头像
@@ -996,6 +1001,22 @@
                 checkServePosition();
                 updateBallToPaddle();
                 updateBallVisuals();
+                
+                // AI自动发球逻辑
+                if (isVsComputer && servingPlayer === 2 && canServe) {
+                    if (!aiShouldServe) {
+                        // AI开始准备发球
+                        aiShouldServe = true;
+                        aiServeStartTime = Date.now();
+                    } else if (Date.now() - aiServeStartTime >= AI_SERVE_DELAY) {
+                        // AI发球延迟时间已到，执行发球
+                        launchBall();
+                        aiShouldServe = false;
+                    }
+                } else {
+                    // 重置AI发球标志，如果不是AI发球或不能发球
+                    aiShouldServe = false;
+                }
             } else if (!isRoundOver) {
                 ballX += ballSpeedX;
                 ballY += ballSpeedY;
