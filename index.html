@@ -658,6 +658,7 @@
         let audioContext = null;
         let hitSound = null;
         let clappingSound = null;
+        let bgmSound = null;
 
         // 头像选择相关变量
         let selectedAvatar1 = '学生头像1.jpg'; // 默认头像
@@ -726,6 +727,13 @@
             resetPlayersPositions();
             resetBall();
             initAudio();
+            
+            // 播放背景音乐
+            if (bgmSound) {
+                bgmSound.currentTime = 0;
+                bgmSound.play().catch(e => console.log("BGM play error:", e));
+            }
+            
             requestAnimationFrame(gameLoop);
         }
         
@@ -931,6 +939,11 @@
             if (!clappingSound) {
                 clappingSound = new Audio('clapping.mp3');
                 clappingSound.volume = 1.0;
+            }
+            if (!bgmSound) {
+                bgmSound = new Audio('bgm.mp3');
+                bgmSound.volume = 0.3; // 背景音乐音量设为较低
+                bgmSound.loop = true; // 设置循环播放
             }
         }
 
@@ -1408,6 +1421,12 @@
             gameOverScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
+            
+            // 停止背景音乐
+            if (bgmSound) {
+                bgmSound.pause();
+                bgmSound.currentTime = 0;
+            }
         });
         
         // 结算页面按钮事件监听器
@@ -1421,6 +1440,12 @@
             updateScoreDisplay();
             // 恢复游戏
             gameActive = true;
+            
+            // 继续播放背景音乐
+            if (bgmSound) {
+                bgmSound.play().catch(e => console.log("BGM play error:", e));
+            }
+            
             resetBall();
             // 重新启动游戏循环
             requestAnimationFrame(gameLoop);
@@ -1430,6 +1455,12 @@
             roundResultScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
+            
+            // 停止背景音乐
+            if (bgmSound) {
+                bgmSound.pause();
+                bgmSound.currentTime = 0;
+            }
         });
         
         // 页面加载完成后初始化头像选择
