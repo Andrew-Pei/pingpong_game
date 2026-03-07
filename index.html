@@ -79,6 +79,10 @@
             background-image: url('国乒头像1.jpg');
         }
         
+        #player2.ai-player {
+            background-image: url('robot-icon.svg');
+        }
+        
         #ball {
             position: absolute;
             width: 20px;
@@ -490,7 +494,7 @@
             
             <!-- 玩家2方向控制 -->
             <div class="touch-control-group">
-                <div class="touch-control-label">国乒队 方向控制</div>
+                <div class="touch-control-label" id="p2-control-label">国乒队 方向控制</div>
                 <div class="touch-direction-buttons">
                     <div class="touch-button up" data-action="p2-up">↑</div>
                     <div class="touch-button down" data-action="p2-down">↓</div>
@@ -532,7 +536,7 @@
                     </div>
                 </div>
                 
-                <div>
+                <div id="ai-avatar-selection">
                     <h3 style="color: #FF5722; font-size: 14px; margin-bottom: 4px;">国乒选手头像选择</h3>
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <div class="avatar-option" data-player="2" data-avatar="国乒头像1.jpg">
@@ -711,9 +715,13 @@
             
             // 更新控制提示
             if (isVsComputer) {
-                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">国乒队</div><span class="key" style="background:#2196F3; color:white; width:60px;">AI</span>';
+                p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">机器人</div><span class="key" style="background:#2196F3; color:white; width:60px;">机器</span>';
+                document.getElementById('p2-control-label').textContent = '机器人 方向控制';
+                player2.classList.add('ai-player'); // 添加AI玩家样式
             } else {
                 p2Controls.innerHTML = '<div style="margin-bottom:5px; color:#aaa;">国乒队</div><span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>';
+                document.getElementById('p2-control-label').textContent = '国乒队 方向控制';
+                player2.classList.remove('ai-player'); // 移除AI玩家样式
             }
 
             gameActive = true;
@@ -800,7 +808,7 @@
                 if (servingPlayer === 1) {
                     serveMsg.textContent = "八中队：点击中间'发球'按钮发球";
                 } else {
-                    serveMsg.textContent = isVsComputer ? "AI准备发球" : "国乒队：点击中间'发球'按钮发球";
+                    serveMsg.textContent = isVsComputer ? "机器人准备发球" : "国乒队：点击中间'发球'按钮发球";
                 }
                 serveMsg.style.color = "#ffff00"; // 黄色
                 canServe = true;
@@ -808,8 +816,7 @@
                 if (servingPlayer === 1) {
                     serveMsg.textContent = "八中队：" + warningText;
                 } else {
-                    serveMsg.textContent = isVsComputer ? "AI发球位置不正确" : "国乒队：" + warningText;
-                }
+                                         serveMsg.textContent = isVsComputer ? "机器人发球位置不正确" : "国乒队：" + warningText;                }
                 serveMsg.style.color = "#ff3333"; // 红色警告
                 canServe = false;
             }
@@ -863,7 +870,7 @@
             if (winner === 1) {
                 msg = "八中队+1分";
             } else {
-                msg = isVsComputer ? "AI+1分" : "国乒队+1分";
+                msg = isVsComputer ? "机器人+1分" : "国乒队+1分";
             }
             statusMsg.textContent = msg;
             statusMsg.classList.add('show');
@@ -891,7 +898,7 @@
                         winnerText.textContent = '八中队 获胜!';
                         winnerText.style.color = '#4CAF50';
                     } else {
-                        winnerText.textContent = isVsComputer ? 'AI获胜!' : '国乒队 获胜!';
+                        winnerText.textContent = isVsComputer ? '机器人获胜!' : '国乒队 获胜!';
                         winnerText.style.color = '#2196F3';
                     }
 
@@ -913,7 +920,7 @@
                         roundWinner.textContent = '八中队 赢得本局！';
                         roundWinner.style.color = '#4CAF50';
                     } else {
-                        roundWinner.textContent = isVsComputer ? 'AI赢得本局！' : '国乒队 赢得本局！';
+                        roundWinner.textContent = isVsComputer ? '机器人赢得本局！' : '国乒队 赢得本局！';
                         roundWinner.style.color = '#2196F3';
                     }
 
@@ -1379,18 +1386,29 @@
         
         document.getElementById('start-pvp').addEventListener('click', () => {
             startScreen.style.display = 'none';
+            // 在双人模式下显示国乒头像选择
+            document.getElementById('ai-avatar-selection').style.display = 'block';
             updatePlayerAvatars(); // 确保使用选中的头像
             initGame(false);
         });
 
         document.getElementById('start-pve').addEventListener('click', () => {
             startScreen.style.display = 'none';
-            updatePlayerAvatars(); // 确保使用选中的头像
+            // 在AI模式下隐藏国乒头像选择并设置机器人头像
+            document.getElementById('ai-avatar-selection').style.display = 'none';
+            selectedAvatar2 = 'robot-icon.svg'; // 设置AI使用机器人头像
+            player2.style.backgroundImage = `url('robot-icon.svg')`;
             initGame(true);
         });
         
         document.getElementById('restart-button').addEventListener('click', () => {
             gameOverScreen.style.display = 'none';
+            if (isVsComputer) {
+                // 在AI模式下隐藏国乒头像选择并设置机器人头像
+                document.getElementById('ai-avatar-selection').style.display = 'none';
+                selectedAvatar2 = 'robot-icon.svg'; // 设置AI使用机器人头像
+                player2.style.backgroundImage = `url('robot-icon.svg')`;
+            }
             initGame(isVsComputer);
         });
 
@@ -1398,6 +1416,9 @@
             gameOverScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
+            
+            // 显示国乒头像选择（恢复双人模式的头像选择界面）
+            document.getElementById('ai-avatar-selection').style.display = 'block';
             
             // 停止背景音乐
             if (bgmSound) {
@@ -1418,6 +1439,13 @@
             // 恢复游戏
             gameActive = true;
             
+            // 如果是AI模式，确保AI头像设置正确
+            if (isVsComputer) {
+                document.getElementById('ai-avatar-selection').style.display = 'none';
+                selectedAvatar2 = 'robot-icon.svg'; // 设置AI使用机器人头像
+                player2.style.backgroundImage = `url('robot-icon.svg')`;
+            }
+            
             // 继续播放背景音乐
             if (bgmSound) {
                 bgmSound.play().catch(e => console.log("BGM play error:", e));
@@ -1432,6 +1460,9 @@
             roundResultScreen.style.display = 'none';
             startScreen.style.display = 'flex';
             gameActive = false;
+            
+            // 显示国乒头像选择（恢复双人模式的头像选择界面）
+            document.getElementById('ai-avatar-selection').style.display = 'block';
             
             // 停止背景音乐
             if (bgmSound) {
